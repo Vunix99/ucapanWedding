@@ -30,8 +30,134 @@
         font-family: "Poppins", sans-serif;
         background-color: #383737; /* semi transparan hitam */
         text-shadow: none !important;
+        overflow: hidden; /* Hide scrollbar during loading */
       }
 
+      /* Preloader Styles */
+      #preloader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #383737; /* Match body background */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999; /* Ensure it's on top */
+        color: white;
+        transition: opacity 0.5s ease;
+        opacity: 1;
+      }
+
+      #preloader.hidden {
+        opacity: 0;
+        visibility: hidden;
+      }
+
+      .loader {
+        width: 100px;
+        height: 100px;
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid rgb(252, 202, 140);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 20px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .progress-container {
+        width: 80%;
+        max-width: 300px;
+        background-color: #555;
+        border-radius: 5px;
+        height: 15px;
+        margin-bottom: 10px;
+        overflow: hidden;
+      }
+
+      #progressBarFill {
+        height: 100%;
+        width: 0%;
+        background-color: rgb(252, 202, 140);
+        border-radius: 5px;
+        transition: width 0.3s ease;
+      }
+
+      .progress-text {
+        font-size: 0.9rem;
+        margin-bottom: 5px;
+        text-align: center;
+      }
+
+      .percentage-text {
+        font-size: 1.1rem;
+        font-weight: bold;
+        text-align: center;
+      }
+
+      /* Initial Message Styles */
+      #initialMessage {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #383737; /* Match body background */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 9998; /* Below preloader, above content */
+        color: white;
+        text-align: center;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.5s ease, visibility 0.5s ease;
+      }
+
+      #initialMessage.show {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      #initialMessage p {
+        font-size: 1.8rem;
+        margin-bottom: 30px;
+        font-weight: 700;
+        font-family: "Poppins", cursive; /* Use a fancy font for the message */
+        color: rgb(252, 202, 140);
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+      }
+
+      #initialMessage button {
+        background-color: rgb(252, 202, 140);
+        color: #383737;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 30px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      }
+
+      #initialMessage button:hover {
+        background-color: rgb(240, 190, 130);
+        transform: translateY(-2px);
+      }
+
+      /* Existing styles */
       .handwriting-heading {
         font-family: "Great Vibes", cursive;
         font-size: 2.2rem;
@@ -55,6 +181,15 @@
         color: white;
         text-shadow: 1px 1px 2px black;
         position: relative;
+        /* Initially hide content until preloader is done */
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.5s ease, visibility 0.5s ease;
+      }
+
+      .mobile-wrapper.show-content {
+        opacity: 1;
+        visibility: visible;
       }
 
       /* Container yang menampung semua komponen carousel */
@@ -435,6 +570,14 @@
       }
 
       @media (max-width: 480px) {
+        #initialMessage p {
+          font-size: 1.5rem;
+        }
+        #initialMessage button {
+          font-size: 1rem;
+          padding: 10px 20px;
+        }
+
         .wedding-text {
           font-size: 1.2rem;
           margin-top: 96px;
@@ -481,6 +624,20 @@
     </style>
   </head>
   <body>
+    <div id="preloader">
+      <div class="loader"></div>
+      <div class="progress-text">Mengunduh aset: <span id="downloadedSize">0 MB</span> / <span id="totalSize">0 MB</span></div>
+      <div class="progress-container">
+        <div id="progressBarFill"></div>
+      </div>
+      <div class="percentage-text"><span id="progressPercentage">0</span>%</div>
+    </div>
+
+    <div id="initialMessage">
+      <p>Halo, ada pesan Nih dari TTPKN 4/20! 💌</p>
+      <button id="viewMessageButton">Lihat Pesan</button>
+    </div>
+
     <audio id="backgroundMusic" loop>
       <source src="/asset/music/bg-music.mp3" type="audio/mp3" />
       Your browser does not support the audio element.
@@ -639,9 +796,24 @@
       const prevVideoBtn = document.getElementById("prevVideoBtn");
       const nextVideoBtn = document.getElementById("nextVideoBtn");
 
+      // --- Preloader Elements ---
+      const preloader = document.getElementById("preloader");
+      const progressBarFill = document.getElementById("progressBarFill");
+      const downloadedSizeSpan = document.getElementById("downloadedSize");
+      const totalSizeSpan = document.getElementById("totalSize");
+      const progressPercentageSpan = document.getElementById(
+        "progressPercentage"
+      );
+
+      // --- Initial Message Elements ---
+      const initialMessage = document.getElementById("initialMessage");
+      const viewMessageButton = document.getElementById("viewMessageButton");
+      const mobileWrapper = document.querySelector(".mobile-wrapper");
+
       // --- Daftar Video & Caption (PERHATIAN: PERLU DIISI MANUAL jika tanpa sisi server) ---
       const videoFilenames = [
         "RIAN.mp4",
+        "ARES.mp4",
         "ARVA.mp4",
         "FAIT.mp4",
         "OCIT.mp4",
@@ -713,6 +885,129 @@
       let animationInProgress = false; // Indicates if any animation for component 2 is currently running/scheduled
       let component2AnimationCompleted = false; // New flag to track if component 2 animation has fully finished
 
+      // --- Preloader Logic ---
+      const assetsToLoad = [];
+      let assetsLoadedCount = 0;
+      // Define estimated sizes for critical assets in bytes
+      // IMPORTANT: These are ESTIMATES. For accurate sizes, you'd need server-side info or fetch headers.
+      const ASSET_SIZES = {
+        "/asset/music/bg-music.mp3": 3000 * 1024, // 3MB
+        "/asset/img/background.png": 1500 * 1024, // 1.5MB
+        "/asset/img/msrizal1.png": 800 * 1024, // 0.8MB
+        "/asset/img/msrizal2.png": 800 * 1024, // 0.8MB
+        "/asset/img/ring-icon.png": 50 * 1024, // 0.05MB
+        "/asset/img/component2-1.png": 100 * 1024, // 0.1MB
+        "/asset/img/component2-2.png": 100 * 1024, // 0.1MB
+        // Estimate average video size for metadata loading purposes (small portion)
+        // Full videos will be loaded on demand in the carousel
+        "video_metadata": 100 * 1024, // 0.1MB per video metadata
+      };
+
+      let totalExpectedBytes = 0;
+      let loadedBytes = 0;
+
+      // Add main images and music
+      assetsToLoad.push(
+        "/asset/music/bg-music.mp3",
+        "/asset/img/background.png",
+        "/asset/img/msrizal1.png",
+        "/asset/img/msrizal2.png",
+        "/asset/img/ring-icon.png",
+        "/asset/img/component2-1.png",
+        "/asset/img/component2-2.png"
+      );
+
+      // Add video paths for metadata loading
+      videoFilenames.forEach((filename) => {
+        assetsToLoad.push(`${videoBasePath}${filename}`);
+      });
+
+      assetsToLoad.forEach((assetPath) => {
+        if (assetPath.includes(".mp4")) {
+          // For videos, we only "load" a small amount for preloader
+          totalExpectedBytes += ASSET_SIZES["video_metadata"];
+        } else {
+          totalExpectedBytes += ASSET_SIZES[assetPath] || 0; // Use 0 if size not defined
+        }
+      });
+      totalSizeSpan.textContent = (totalExpectedBytes / (1024 * 1024)).toFixed(
+        1
+      ); // Display in MB
+
+      function updateProgress(loadedBytesCount) {
+        loadedBytes = loadedBytesCount;
+        const percentage = Math.min(
+          100,
+          Math.floor((loadedBytes / totalExpectedBytes) * 100)
+        );
+        progressBarFill.style.width = `${percentage}%`;
+        downloadedSizeSpan.textContent = (loadedBytes / (1024 * 1024)).toFixed(
+          1
+        );
+        progressPercentageSpan.textContent = percentage;
+
+        if (percentage >= 100) {
+          setTimeout(() => {
+            preloader.classList.add("hidden");
+            // Show initial message after preloader hides
+            setTimeout(() => {
+              initialMessage.classList.add("show");
+              document.body.style.overflow = "hidden"; // Keep body overflow hidden until message is dismissed
+            }, 500); // Wait for preloader transition
+          }, 300); // Small delay before hiding preloader
+        }
+      }
+
+      async function loadAsset(url) {
+        return new Promise((resolve) => {
+          if (url.endsWith(".mp3")) {
+            const audio = new Audio();
+            audio.src = url;
+            audio.preload = "auto";
+            audio.oncanplaythrough = () => {
+              resolve(ASSET_SIZES[url]);
+            };
+            audio.onerror = () => {
+              console.warn(`Failed to load audio: ${url}`);
+              resolve(0); // Resolve with 0 bytes on error
+            };
+            audio.load();
+          } else if (url.endsWith(".mp4")) {
+            const video = document.createElement("video");
+            video.src = url;
+            video.preload = "metadata"; // Only load metadata
+            video.onloadedmetadata = () => {
+              resolve(ASSET_SIZES["video_metadata"]); // Resolve with estimated metadata size
+            };
+            video.onerror = () => {
+              console.warn(`Failed to load video metadata: ${url}`);
+              resolve(0); // Resolve with 0 bytes on error
+            };
+            video.load();
+          } else {
+            const img = new Image();
+            img.src = url;
+            img.onload = () => {
+              resolve(ASSET_SIZES[url]);
+            };
+            img.onerror = () => {
+              console.warn(`Failed to load image: ${url}`);
+              resolve(0); // Resolve with 0 bytes on error
+            };
+          }
+        });
+      }
+
+      async function startLoadingAssets() {
+        let currentLoadedBytes = 0;
+        for (const assetPath of assetsToLoad) {
+          const size = await loadAsset(assetPath);
+          currentLoadedBytes += size;
+          updateProgress(currentLoadedBytes);
+        }
+      }
+      // --- End Preloader Logic ---
+
       function setRealViewportHeight() {
         const vh = window.innerHeight * 0.01;
         document.documentElement.style.setProperty("--real-vh", `${vh}px`);
@@ -720,13 +1015,38 @@
 
       window.addEventListener("resize", setRealViewportHeight);
       window.addEventListener("orientationchange", setRealViewportHeight);
-      window.addEventListener("load", setRealViewportHeight);
 
       document.addEventListener("DOMContentLoaded", () => {
-    loadVideos();
-    updateProgressBar();
-    initVideoCarousel(); // This will now *not* attempt to play background music initially
-});
+        // Start preloading assets immediately
+        startLoadingAssets();
+        setRealViewportHeight();
+      });
+
+      viewMessageButton.addEventListener("click", () => {
+        initialMessage.classList.remove("show");
+        initialMessage.classList.add("hidden"); // Hide the initial message
+
+        setTimeout(() => {
+          mobileWrapper.classList.add("show-content"); // Show the main content
+          document.body.style.overflow = "auto"; // Allow scrolling again
+          initVideoCarousel(); // Initialize video carousel and attempt to play music
+
+          // Attempt to play background music on user interaction
+          if (backgroundMusic && backgroundMusic.paused) {
+            const playPromise = backgroundMusic.play();
+            if (playPromise !== undefined) {
+              playPromise
+                .then(() => {
+                  console.log("Background music started after user interaction.");
+                })
+                .catch((error) => {
+                  console.warn("Autoplay prevented:", error);
+                  // Autoplay was prevented. User might need to manually enable sound.
+                });
+            }
+          }
+        }, 500); // Delay to match initialMessage transition
+      });
 
       function setAnimationTimeout(fn, delay) {
         const id = setTimeout(fn, delay);
@@ -1015,70 +1335,76 @@
       });
 
       // Function to play a specific video (improved)
-      async function playVideo(videoElement) {
-        if (!videoElement) return;
+// Function to play a specific video (improved)
+async function playVideo(videoElement) {
+  if (!videoElement) return;
 
-        pauseBackgroundMusic(); // Pause music when a video is about to play
+  pauseBackgroundMusic(); // Pause music when a video is about to play
 
-        try {
-          if (videoElement.readyState < 2) {
-            videoElement.load();
-            await new Promise((resolve, reject) => {
-              const timeout = setTimeout(() => {
-                reject(new Error("Video load timeout"));
-              }, 5000);
+  try {
+    if (videoElement.readyState < 2) {
+      videoElement.load();
+      await new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error("Video load timeout"));
+        }, 5000);
 
-              const onLoadedData = () => {
-                clearTimeout(timeout);
-                videoElement.removeEventListener("loadeddata", onLoadedData);
-                videoElement.removeEventListener("error", onError);
-                resolve();
-              };
+        const onLoadedData = () => {
+          clearTimeout(timeout);
+          videoElement.removeEventListener("loadeddata", onLoadedData);
+          videoElement.removeEventListener("error", onError);
+          resolve();
+        };
 
-              const onError = (e) => {
-                clearTimeout(timeout);
-                videoElement.removeEventListener("loadeddata", onLoadedData);
-                videoElement.removeEventListener("error", onError);
-                reject(e);
-              };
+        const onError = (e) => {
+          clearTimeout(timeout);
+          videoElement.removeEventListener("loadeddata", onLoadedData);
+          videoElement.removeEventListener("error", onError);
+          reject(e);
+        };
 
-              videoElement.addEventListener("loadeddata", onLoadedData);
-              videoElement.addEventListener("error", onError);
-            });
-          }
+        videoElement.addEventListener("loadeddata", onLoadedData);
+        videoElement.addEventListener("error", onError);
+      });
+    }
 
-          videoElement.currentTime = 0;
+    videoElement.currentTime = 0;
 
-          if (userHasInteracted) {
-            videoElement.muted = false;
-            try {
-              const playPromise = videoElement.play();
-              if (playPromise !== undefined) {
-                await playPromise;
-                console.log("Video playback started with sound");
-                return;
-              }
-            } catch (error) {
-              console.log("Failed to play with sound, trying muted:", error);
-            }
-          }
-
-          videoElement.muted = true;
-          const playPromise = videoElement.play();
-
-          if (playPromise !== undefined) {
-            await playPromise;
-            console.log("Video playback started (muted)");
-            showUnmuteIndicator(videoElement);
-          }
-        } catch (error) {
-          console.warn("Video playback failed:", error);
-          videoElement.pause();
-          videoElement.muted = true;
-          resumeBackgroundMusic(); // Resume music if video fails to play
+    if (userHasInteracted) {
+      videoElement.muted = false;
+      // --- UBAH INI: Atur volume ke 1.0 (100% maksimal) ---
+      videoElement.volume = 1.0;
+      // --- END UBAH ---
+      try {
+        const playPromise = videoElement.play();
+        if (playPromise !== undefined) {
+          await playPromise;
+          console.log("Video playback started with sound");
+          return;
         }
+      } catch (error) {
+        console.log("Failed to play with sound, trying muted:", error);
       }
+    }
 
+    videoElement.muted = true;
+    // --- UBAH INI JUGA: Atur volume ke 1.0 (100% maksimal) ---
+    videoElement.volume = 1.0;
+    // --- END UBAH ---
+    const playPromise = videoElement.play();
+
+    if (playPromise !== undefined) {
+      await playPromise;
+      console.log("Video playback started (muted)");
+      showUnmuteIndicator(videoElement);
+    }
+  } catch (error) {
+    console.warn("Video playback failed:", error);
+    videoElement.pause();
+    videoElement.muted = true;
+    resumeBackgroundMusic(); // Resume music if video fails to play
+  }
+}
       function showUnmuteIndicator(videoElement) {
         const existingIndicator =
           videoElement.parentElement.querySelector(".unmute-indicator");
@@ -1088,7 +1414,7 @@
 
         const indicator = document.createElement("div");
         indicator.className = "unmute-indicator";
-        indicator.innerHTML = "🔊 Tap to unmute";
+        indicator.innerHTML = "🔊 Tap untuk unmute";
         indicator.style.cssText = `
       position: absolute;
       top: 10px;
@@ -1250,18 +1576,12 @@
       });
 
       // Initialize carousel
-function initVideoCarousel() {
-    loadVideos();
-    // REMOVE or comment out the direct call to resumeBackgroundMusic() here for initial load
-    // resumeBackgroundMusic(); // <--- REMOVE THIS LINE OR COMMENT IT OUT
-    if (totalVideos > 0) {
-        const activeVideoElement = getActiveVideoElement();
-        if (activeVideoElement) {
-            activeVideoElement.muted = true; // Ensure initial video play attempt is muted
-            playVideo(activeVideoElement); // Attempt to play video (muted if no interaction yet)
-        }
-    }
-}
+      function initVideoCarousel() {
+        loadVideos();
+        // REMOVE or comment out the direct call to resumeBackgroundMusic() here for initial load
+        // resumeBackgroundMusic(); // <--- REMOVE THIS LINE OR COMMENT IT OUT
+        // Video tidak akan diputar di sini lagi, hanya di goToSlide(2)
+      }
 
       // --- End Video Carousel Functions ---
 
@@ -1472,13 +1792,6 @@ function initVideoCarousel() {
         },
         { passive: false }
       );
-
-      document.addEventListener("DOMContentLoaded", () => {
-        loadVideos();
-        updateProgressBar();
-        // Call initVideoCarousel to start music playback on DOMContentLoaded
-        initVideoCarousel();
-      });
     </script>
   </body>
 </html>
