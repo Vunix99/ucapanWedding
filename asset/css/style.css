@@ -1,0 +1,602 @@
+      body {
+        font-family: "Poppins", sans-serif;
+        background-color: #383737; /* semi transparan hitam */
+        text-shadow: none !important;
+        overflow: hidden; /* Hide scrollbar during loading */
+      }
+
+      .vertical-progress-bar{
+        z-index: 101;
+      }
+
+      #btnScroll{
+        z-index: 1000;
+      }
+      /* Preloader Styles */
+      #preloader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #383737; /* Match body background */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999; /* Ensure it's on top */
+        color: white;
+        transition: opacity 0.5s ease;
+        opacity: 1;
+      }
+
+      #preloader.hidden {
+        opacity: 0;
+        visibility: hidden;
+      }
+
+      .loader {
+        width: 100px;
+        height: 100px;
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid rgb(252, 202, 140);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 20px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .progress-container {
+        width: 80%;
+        max-width: 300px;
+        background-color: #555;
+        border-radius: 5px;
+        height: 15px;
+        margin-bottom: 10px;
+        overflow: hidden;
+      }
+
+      #progressBarFill {
+        height: 100%;
+        width: 0%;
+        background-color: rgb(252, 202, 140);
+        border-radius: 5px;
+        transition: width 0.3s ease;
+      }
+
+      .progress-text {
+        font-size: 0.9rem;
+        margin-bottom: 5px;
+        text-align: center;
+      }
+
+      .percentage-text {
+        font-size: 1.1rem;
+        font-weight: bold;
+        text-align: center;
+      }
+
+      /* Initial Message Styles */
+      #initialMessage {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #383737; /* Match body background */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 9998; /* Below preloader, above content */
+        color: white;
+        text-align: center;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.5s ease, visibility 0.5s ease;
+      }
+
+      #initialMessage.show {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      #initialMessage p {
+        font-size: 1.8rem;
+        margin-bottom: 30px;
+        font-weight: 700;
+        font-family: "Poppins", cursive; /* Use a fancy font for the message */
+        color: rgb(252, 202, 140);
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+      }
+
+      #initialMessage button {
+        background-color: rgb(252, 202, 140);
+        color: #383737;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 30px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      }
+
+      #initialMessage button:hover {
+        background-color: rgb(240, 190, 130);
+        transform: translateY(-2px);
+      }
+
+      /* Existing styles */
+      .handwriting-heading {
+        font-family: "Great Vibes", cursive;
+        font-size: 2.2rem;
+      }
+
+      .mobile-wrapper {
+        max-width: 430px;
+        margin: auto;
+        border: 1px solid #ddd;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        height: calc(
+          var(--real-vh, 1vh) * 100
+        ); /* pakai tinggi nyata dari JS */
+        overflow: hidden;
+        background-image: url("/asset/img/background.png");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        display: flex;
+        flex-direction: column;
+        color: white;
+        text-shadow: 1px 1px 2px black;
+        position: relative;
+        /* Initially hide content until preloader is done */
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.5s ease, visibility 0.5s ease;
+      }
+
+      .mobile-wrapper.show-content {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      /* Container yang menampung semua komponen carousel */
+      .carousel-container {
+        flex: 1;
+        overflow-y: hidden;
+        scroll-behavior: smooth;
+        position: relative;
+      }
+
+      /* Kontainer yang akan di-scroll dengan height = 300% karena 3 komponen */
+      .carousel-inner {
+        height: 300vh; /* 3 komponen, masing2 100vh */
+        transition: transform 0.5s ease-in-out;
+      }
+
+      /* Setiap komponen full tinggi viewport .mobile-wrapper */
+      .component {
+        height: 100vh;
+        padding: 30px 20px;
+        box-sizing: border-box;
+      }
+
+      .component-1 {
+        background: rgba(44, 44, 44, 0.8);
+        color: #e6e6e6;
+      }
+      .component-2 {
+        background: rgba(44, 44, 44, 0.8);
+        color: #e6e6e6;
+      }
+      .component-3 {
+        background: rgba(44, 44, 44, 0.8);
+        color: #e6e6e6;
+      }
+
+      /* Vertical Progress Bar */
+      .vertical-progress-bar {
+        position: absolute;
+        left: 15px; /* Adjust as needed for padding */
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        z-index: 15;
+      }
+
+      .progress-segment {
+        width: 8px; /* Default width for inactive state */
+        height: 8px; /* Default height for inactive state (makes it round) */
+        background: rgba(255, 255, 255, 0.4);
+        cursor: pointer;
+        transition: all 0.3s ease; /* Smooth transition for all properties */
+        border-radius: 50%; /* Make it round by default */
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        box-sizing: border-box; /* Include padding/border in element's total width/height */
+      }
+
+      .progress-segment.active {
+        height: 40px; /* Taller for active state */
+        border-radius: 4px; /* Rounded corners for bar shape */
+        background: rgba(252, 202, 140, 0.9);
+        border-color: rgba(252, 202, 140, 1);
+        transform: scale(1.1); /* Slightly enlarge active segment */
+      }
+
+      .progress-segment:hover {
+        background: rgba(255, 255, 255, 0.7);
+        transform: scale(1.05);
+      }
+
+      .progress-segment.active:hover {
+        background: rgb(252, 202, 140);
+        transform: scale(1.1);
+      }
+
+      /* Tombol panah */
+      .btn-scroll {
+        position: absolute;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(252, 202, 140, 0.9);
+        border: none;
+        border-radius: 50%;
+        width: 48px;
+        height: 48px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+        animation: floatUpDown 2s ease-in-out infinite;
+        z-index: 10;
+        transition: all 0.3s ease;
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .btn-scroll.hidden {
+        opacity: 0;
+        visibility: hidden;
+      }
+
+      .btn-scroll:hover {
+        background: rgb(252, 202, 140);
+      }
+
+      @keyframes floatUpDown {
+        0%,
+        100% {
+          transform: translateX(-50%) translateY(0);
+        }
+        50% {
+          transform: translateX(-50%) translateY(-10px);
+        }
+      }
+
+      .btn-scroll svg {
+        width: 24px;
+        height: 24px;
+        fill: #383737;
+      }
+
+      /* Animasi cincin */
+      .ring-animation-container {
+        height: 100%;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .ring-icon {
+        width: auto;
+        height: 80px;
+        opacity: 0;
+        transform: scale(0);
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        margin-left: -40px;
+        margin-top: -20px;
+        transition: all 1s ease;
+      }
+
+      .ring-icon.animate {
+        animation: ringPopUpAndMove 2.5s ease-in-out forwards;
+      }
+
+      @keyframes ringPopUpAndMove {
+        0% {
+          opacity: 0;
+          transform: scale(0);
+          top: 50%;
+        }
+        30% {
+          opacity: 1;
+          transform: scale(1.3);
+          top: 50%;
+        }
+        50% {
+          opacity: 1;
+          transform: scale(1);
+          top: 50%;
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1);
+          top: 30px;
+        }
+      }
+
+      .wedding-text {
+        opacity: 0;
+        font-weight: bold;
+        font-size: 1.6rem;
+        color: #e6e6e6;
+        text-align: center;
+        margin-top: 96px;
+        transition: opacity 0.8s ease;
+      }
+
+      .wedding-text.show {
+        opacity: 1;
+      }
+
+      .wedding-text span {
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        display: inline-block;
+      }
+
+      .animated-image-row {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-top: 20px;
+        width: 100%; /* penuh lebar induk */
+        height: auto; /* sesuaikan tinggi container */
+        opacity: 0; /* awalnya sembunyi */
+        transform: translateY(
+          20px
+        ); /* sedikit ke bawah untuk efek fade in dari bawah */
+        transition: opacity 0.8s ease-in-out, transform 0.8s ease-in-out;
+      }
+
+      /* FIX: Tambahkan CSS untuk class show */
+      .animated-image-row.show {
+        opacity: 1;
+        transform: translateY(0); /* kembali ke posisi normal */
+      }
+
+      .bounce-img {
+        width: 100%; /* gambar mengisi tiap kolom */
+        max-width: 200px; /* batas maksimal agar tidak terlalu besar */
+        object-fit: contain;
+        animation-duration: 1.5s;
+        animation-iteration-count: infinite;
+        animation-timing-function: ease-in-out;
+      }
+
+      .bounce-img.left {
+        animation-name: bounceUpDown;
+      }
+
+      .bounce-img.right {
+        animation-name: bounceDownUp;
+      }
+
+      @keyframes bounceUpDown {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+      }
+
+      @keyframes bounceDownUp {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(10px);
+        }
+      }
+
+      /* Font khusus untuk teks Arab atau transliterasi */
+      .arabic-text {
+        font-family: "Scheherazade New", "Amiri", serif; /* Font Arabic-style */
+        font-size: 1.3rem;
+        color: #ffbe69;
+        display: block;
+        margin-bottom: 10px;
+      }
+
+      /* Font berbeda untuk terjemahan */
+      .translation {
+        font-family: "Poppins", sans-serif;
+        font-size: 1rem;
+        color: #666;
+      }
+
+      /* Kontainer dan animasi */
+      .wedding-blessing {
+        text-align: center;
+        margin-top: 20px;
+        padding-right: 8px;
+        padding-left: 8px;
+        opacity: 0;
+        transform: translateY(
+          30px
+        ); /* sedikit ke bawah untuk efek fade in dari bawah */
+        transition: opacity 1s ease-in-out, transform 1s ease-in-out;
+      }
+
+      .wedding-blessing.show {
+        opacity: 1;
+        transform: translateY(0); /* kembali ke posisi normal */
+      }
+
+      /* Video Carousel Styles */
+      .video-carousel-container {
+        position: relative;
+        width: 100%;
+        max-width: 300px; /* Atur lebar maksimum carousel video */
+        margin: 20px auto;
+        overflow: hidden;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        opacity: 0; /* Awalnya tersembunyi untuk animasi AOS */
+        transform: translateY(30px); /* Untuk efek fade-up AOS */
+        transition: opacity 1s ease-in-out, transform 1s ease-in-out;
+      }
+
+      /* Menangani animasi AOS secara manual untuk video carousel container */
+      .video-carousel-container.aos-animate {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .video-carousel {
+        display: flex;
+        transition: transform 0.5s ease-in-out;
+      }
+
+      .video-item {
+        flex: 0 0 100%; /* Setiap item video mengambil 100% lebar carousel */
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+      }
+
+      .video-item video {
+        width: 100%;
+        display: block; /* Menghilangkan spasi ekstra di bawah video */
+        background-color: black; /* Latar belakang hitam untuk mengisi ruang jika video tidak pas */
+      }
+
+      .video-wrapper {
+        width: 100%;
+        padding-bottom: 133.33%; /* 4 / 3 = 1.3333, jadi 133.33% */
+        position: relative;
+        overflow: hidden; /* Penting untuk menjaga video tetap dalam rasio */
+      }
+
+      .video-wrapper video {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain; /* Memastikan video pas dalam rasio tanpa terpotong */
+      }
+
+      .video-caption {
+        margin-top: 10px;
+        font-size: 0.9rem;
+        color: #e6e6e6;
+      }
+
+      .carousel-control {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(252, 202, 140, 0.9);
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 5; /* Di atas video */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        transition: background 0.3s ease;
+      }
+
+      .carousel-control:hover {
+        background: rgb(252, 202, 140);
+      }
+
+      .prev-video {
+        left: 10px;
+      }
+
+      .next-video {
+        right: 10px;
+      }
+
+      @media (max-width: 480px) {
+        #initialMessage p {
+          font-size: 1.5rem;
+        }
+        #initialMessage button {
+          font-size: 1rem;
+          padding: 10px 20px;
+        }
+
+        .wedding-text {
+          font-size: 1.2rem;
+          margin-top: 96px;
+        }
+
+        .arabic-text {
+          font-size: 1.05rem;
+          margin-bottom: 8px;
+        }
+
+        .translation {
+          font-size: 0.9rem;
+        }
+
+        .animated-image-row {
+          align-items: center;
+          gap: 15px;
+        }
+
+        .bounce-img {
+          max-width: 150px; /* lebih kecil di layar kecil */
+        }
+
+        .vertical-progress-bar {
+          left: 10px; /* Smaller left padding on small screens */
+        }
+
+        /* Adjustments for progress segments on small screens */
+        .progress-segment {
+          width: 6px; /* Slightly smaller width for inactive */
+          height: 6px; /* Slightly smaller height for inactive */
+        }
+
+        .progress-segment.active {
+          height: 30px; /* Shorter segments on small screens */
+        }
+
+        .carousel-control {
+          width: 35px;
+          height: 35px;
+          font-size: 0.8rem;
+        }
+      }

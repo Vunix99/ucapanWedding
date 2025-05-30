@@ -1,0 +1,46 @@
+/* Di asset/css/flower.css */
+
+/* Styling dasar untuk semua bunga jatuh */
+.falling-flower {
+  position: absolute;
+  opacity: 0; /* Mulai dengan tidak terlihat */
+  animation: fall linear infinite;
+  /* z-index akan diatur oleh kelas spesifik (back/front) */
+}
+
+/* Bunga di BELAKANG konten utama */
+.falling-flower-back {
+  z-index: 1; /* Nilai rendah agar di belakang */
+  /* Anda bisa tambahkan style spesifik untuk bunga belakang jika mau,
+     misalnya sedikit lebih kecil atau lebih transparan */
+  /* filter: blur(0.5px); */ /* Efek blur ringan untuk kedalaman */
+  /* opacity: 0.6; */
+}
+
+/* Bunga di DEPAN konten utama */
+.falling-flower-front {
+  z-index: 100; /* Nilai tinggi agar di depan semua elemen lain */
+  /* Anda bisa tambahkan style spesifik untuk bunga depan */
+}
+
+/* Pastikan konten utama memiliki z-index di antara bunga depan dan belakang */
+.carousel-container {
+  position: relative; /* Penting agar z-index bekerja */
+  z-index: 50; /* Nilai tengah, di atas bunga belakang dan di bawah bunga depan */
+}
+
+/* Jika Anda memiliki elemen lain seperti preloader atau initialMessage
+   yang harus selalu di atas, pastikan z-index-nya lebih tinggi dari
+   falling-flower-front (misal, 1000) */
+#preloader, #initialMessage {
+    position: fixed; /* Atau absolute, tergantung kebutuhan */
+    z-index: 1000; /* Pastikan selalu di atas segalanya */
+}
+
+/* Keyframes animasi tetap sama */
+@keyframes fall {
+  to {
+    transform: translateY(100vh) rotate(360deg);
+    /* opacity akan diatur di JS untuk variasi */
+  }
+}
