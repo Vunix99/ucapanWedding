@@ -626,7 +626,10 @@
   <body>
     <div id="preloader">
       <div class="loader"></div>
-      <div class="progress-text">Mengunduh aset: <span id="downloadedSize">0 MB</span> / <span id="totalSize">0 MB</span></div>
+      <div class="progress-text">
+        Mengunduh aset: <span id="downloadedSize">0 MB</span> /
+        <span id="totalSize">0 MB</span>
+      </div>
       <div class="progress-container">
         <div id="progressBarFill"></div>
       </div>
@@ -801,9 +804,8 @@
       const progressBarFill = document.getElementById("progressBarFill");
       const downloadedSizeSpan = document.getElementById("downloadedSize");
       const totalSizeSpan = document.getElementById("totalSize");
-      const progressPercentageSpan = document.getElementById(
-        "progressPercentage"
-      );
+      const progressPercentageSpan =
+        document.getElementById("progressPercentage");
 
       // --- Initial Message Elements ---
       const initialMessage = document.getElementById("initialMessage");
@@ -900,7 +902,7 @@
         "/asset/img/component2-2.png": 100 * 1024, // 0.1MB
         // Estimate average video size for metadata loading purposes (small portion)
         // Full videos will be loaded on demand in the carousel
-        "video_metadata": 100 * 1024, // 0.1MB per video metadata
+        video_metadata: 100 * 1024, // 0.1MB per video metadata
       };
 
       let totalExpectedBytes = 0;
@@ -1037,7 +1039,9 @@
             if (playPromise !== undefined) {
               playPromise
                 .then(() => {
-                  console.log("Background music started after user interaction.");
+                  console.log(
+                    "Background music started after user interaction."
+                  );
                 })
                 .catch((error) => {
                   console.warn("Autoplay prevented:", error);
@@ -1335,76 +1339,76 @@
       });
 
       // Function to play a specific video (improved)
-// Function to play a specific video (improved)
-async function playVideo(videoElement) {
-  if (!videoElement) return;
+      // Function to play a specific video (improved)
+      async function playVideo(videoElement) {
+        if (!videoElement) return;
 
-  pauseBackgroundMusic(); // Pause music when a video is about to play
+        pauseBackgroundMusic(); // Pause music when a video is about to play
 
-  try {
-    if (videoElement.readyState < 2) {
-      videoElement.load();
-      await new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => {
-          reject(new Error("Video load timeout"));
-        }, 5000);
+        try {
+          if (videoElement.readyState < 2) {
+            videoElement.load();
+            await new Promise((resolve, reject) => {
+              const timeout = setTimeout(() => {
+                reject(new Error("Video load timeout"));
+              }, 5000);
 
-        const onLoadedData = () => {
-          clearTimeout(timeout);
-          videoElement.removeEventListener("loadeddata", onLoadedData);
-          videoElement.removeEventListener("error", onError);
-          resolve();
-        };
+              const onLoadedData = () => {
+                clearTimeout(timeout);
+                videoElement.removeEventListener("loadeddata", onLoadedData);
+                videoElement.removeEventListener("error", onError);
+                resolve();
+              };
 
-        const onError = (e) => {
-          clearTimeout(timeout);
-          videoElement.removeEventListener("loadeddata", onLoadedData);
-          videoElement.removeEventListener("error", onError);
-          reject(e);
-        };
+              const onError = (e) => {
+                clearTimeout(timeout);
+                videoElement.removeEventListener("loadeddata", onLoadedData);
+                videoElement.removeEventListener("error", onError);
+                reject(e);
+              };
 
-        videoElement.addEventListener("loadeddata", onLoadedData);
-        videoElement.addEventListener("error", onError);
-      });
-    }
+              videoElement.addEventListener("loadeddata", onLoadedData);
+              videoElement.addEventListener("error", onError);
+            });
+          }
 
-    videoElement.currentTime = 0;
+          videoElement.currentTime = 0;
 
-    if (userHasInteracted) {
-      videoElement.muted = false;
-      // --- UBAH INI: Atur volume ke 1.0 (100% maksimal) ---
-      videoElement.volume = 1.0;
-      // --- END UBAH ---
-      try {
-        const playPromise = videoElement.play();
-        if (playPromise !== undefined) {
-          await playPromise;
-          console.log("Video playback started with sound");
-          return;
+          if (userHasInteracted) {
+            videoElement.muted = false;
+            // --- UBAH INI: Atur volume ke 1.0 (100% maksimal) ---
+            videoElement.volume = 1.0;
+            // --- END UBAH ---
+            try {
+              const playPromise = videoElement.play();
+              if (playPromise !== undefined) {
+                await playPromise;
+                console.log("Video playback started with sound");
+                return;
+              }
+            } catch (error) {
+              console.log("Failed to play with sound, trying muted:", error);
+            }
+          }
+
+          videoElement.muted = true;
+          // --- UBAH INI JUGA: Atur volume ke 1.0 (100% maksimal) ---
+          videoElement.volume = 1.0;
+          // --- END UBAH ---
+          const playPromise = videoElement.play();
+
+          if (playPromise !== undefined) {
+            await playPromise;
+            console.log("Video playback started (muted)");
+            showUnmuteIndicator(videoElement);
+          }
+        } catch (error) {
+          console.warn("Video playback failed:", error);
+          videoElement.pause();
+          videoElement.muted = true;
+          resumeBackgroundMusic(); // Resume music if video fails to play
         }
-      } catch (error) {
-        console.log("Failed to play with sound, trying muted:", error);
       }
-    }
-
-    videoElement.muted = true;
-    // --- UBAH INI JUGA: Atur volume ke 1.0 (100% maksimal) ---
-    videoElement.volume = 1.0;
-    // --- END UBAH ---
-    const playPromise = videoElement.play();
-
-    if (playPromise !== undefined) {
-      await playPromise;
-      console.log("Video playback started (muted)");
-      showUnmuteIndicator(videoElement);
-    }
-  } catch (error) {
-    console.warn("Video playback failed:", error);
-    videoElement.pause();
-    videoElement.muted = true;
-    resumeBackgroundMusic(); // Resume music if video fails to play
-  }
-}
       function showUnmuteIndicator(videoElement) {
         const existingIndicator =
           videoElement.parentElement.querySelector(".unmute-indicator");
@@ -1686,15 +1690,17 @@ async function playVideo(videoElement) {
         // If on component 2 and animation is in progress, prevent changing slide
         if (currentIndex === 1 && animationInProgress) {
           console.log("Click ignored - Component 2 animation is running");
-          e.preventDefault();
+          e.preventDefault(); // Mencegah tindakan default tombol
           return;
         }
 
-        currentIndex++;
-        if (currentIndex > maxIndex) {
-          currentIndex = 0;
+        // Only allow scrolling forward from component 0 and 1
+        if (currentIndex < maxIndex) {
+          currentIndex++;
+          goToSlide(currentIndex);
         }
-        goToSlide(currentIndex);
+        // If already at maxIndex (component 2), do nothing or reset to 0 based on desired behavior
+        // For now, it will stay at maxIndex
       });
 
       // Event listener untuk klik layar dengan proteksi
@@ -1719,11 +1725,15 @@ async function playVideo(videoElement) {
         }
 
         // Perform normal navigation if not protected
-        currentIndex++;
-        if (currentIndex > maxIndex) {
-          currentIndex = 0;
+        // This will only go to the next slide
+        if (currentIndex < maxIndex) {
+          currentIndex++;
+          goToSlide(currentIndex);
+        } else {
+          // If at the last slide, loop back to the first or stay
+          currentIndex = 0; // Or keep it at maxIndex if you don't want to loop
+          goToSlide(currentIndex);
         }
-        goToSlide(currentIndex);
       });
 
       progressBarSegments.forEach((segment, index) => {
@@ -1738,38 +1748,75 @@ async function playVideo(videoElement) {
 
       const carouselContainer = document.getElementById("carouselContainer");
 
+      carouselContainer.addEventListener(
+        "touchstart",
+        (e) => {
+          startY = e.touches[0].clientY;
+          isSwiping = false; // Reset flag
+        },
+        { passive: true }
+      ); // Gunakan passive: true untuk peningkatan kinerja (tidak akan memanggil preventDefault di touchstart)
+
+      carouselContainer.addEventListener(
+        "touchmove",
+        (e) => {
+          // Hanya jika satu jari disentuh dan belum ada swipe aktif
+          if (e.touches.length === 1 && !isSwiping) {
+            const currentY = e.touches[0].clientY;
+            const diffY = startY - currentY;
+
+            // Jika pergerakan vertikal cukup signifikan untuk dianggap sebagai swipe
+            if (Math.abs(diffY) > 5) {
+              // Sedikit toleransi sebelum menandai sebagai swipe
+              isSwiping = true;
+              // Jika ini adalah swipe vertikal, cegah default agar tidak memicu pull-to-refresh
+              // Penting: hanya panggil preventDefault jika Anda yakin ingin mengelola scroll secara manual
+              e.preventDefault();
+            }
+          }
+        },
+        { passive: false } // Gunakan passive: false agar preventDefault bisa berfungsi
+      );
+
       carouselContainer.addEventListener("touchstart", (e) => {
         startY = e.touches[0].clientY;
       });
 
       carouselContainer.addEventListener("touchend", (e) => {
-        endY = e.changedTouches[0].clientY;
-        const diffY = startY - endY;
+        if (isSwiping) {
+          // Hanya proses jika ada swipe vertikal yang terdeteksi
+          endY = e.changedTouches[0].clientY;
+          const diffY = startY - endY;
 
-        // Add protection for swipe gestures on Component 2
-        if (currentIndex === 1 && animationInProgress) {
-          console.log("Swipe ignored - Component 2 animation is running");
-          return;
-        }
+          // Add protection for swipe gestures on Component 2
+          if (currentIndex === 1 && animationInProgress) {
+            console.log("Swipe ignored - Component 2 animation is running");
+            isSwiping = false; // Reset flag
+            return;
+          }
 
-        if (diffY > threshold) {
-          currentIndex++;
-          if (currentIndex > maxIndex) {
-            currentIndex = maxIndex;
+          if (diffY > threshold) {
+            // Swipe Up (pindah ke komponen berikutnya)
+            currentIndex++;
+            if (currentIndex > maxIndex) {
+              currentIndex = maxIndex; // Batasi agar tidak melebihi indeks terakhir
+            }
+          } else if (diffY < -threshold) {
+            // Swipe Down (pindah ke komponen sebelumnya)
+            currentIndex--;
+            if (currentIndex < 0) {
+              currentIndex = 0; // Batasi agar tidak kurang dari indeks pertama
+            }
           }
-        } else if (diffY < -threshold) {
-          currentIndex--;
-          if (currentIndex < 0) {
-            currentIndex = 0;
-          }
+          goToSlide(currentIndex);
+          isSwiping = false; // Reset flag setelah selesai
         }
-        goToSlide(currentIndex);
       });
-
+      
       carouselContainer.addEventListener(
         "wheel",
         (e) => {
-          e.preventDefault();
+          e.preventDefault(); // Mencegah scrolling default browser
 
           // Add protection for wheel events on Component 2
           if (currentIndex === 1 && animationInProgress) {
@@ -1778,11 +1825,13 @@ async function playVideo(videoElement) {
           }
 
           if (e.deltaY > 0) {
+            // Gulir ke bawah (pindah ke komponen berikutnya)
             currentIndex++;
             if (currentIndex > maxIndex) {
               currentIndex = maxIndex;
             }
           } else {
+            // Gulir ke atas (pindah ke komponen sebelumnya)
             currentIndex--;
             if (currentIndex < 0) {
               currentIndex = 0;
@@ -1790,7 +1839,7 @@ async function playVideo(videoElement) {
           }
           goToSlide(currentIndex);
         },
-        { passive: false }
+        { passive: false } // Penting: Gunakan passive: false untuk memungkinkan preventDefault
       );
     </script>
   </body>
