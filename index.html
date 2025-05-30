@@ -45,8 +45,10 @@
         margin: auto;
         border: 1px solid #ddd;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        height: 100vh; /* tinggi penuh viewport */
-        overflow: hidden; /* supaya scroll disembunyikan */
+        height: calc(
+          var(--real-vh, 1vh) * 100
+        ); /* pakai tinggi nyata dari JS */
+        overflow: hidden;
         background-image: url("/asset/img/background.png");
         background-size: cover;
         background-position: center;
@@ -463,6 +465,14 @@
       let animationTimeouts = [];
       let animationInProgress = false;
 
+      function setRealViewportHeight() {
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty("--real-vh", `${vh}px`);
+      }
+
+      window.addEventListener("resize", setRealViewportHeight);
+      window.addEventListener("orientationchange", setRealViewportHeight);
+      window.addEventListener("load", setRealViewportHeight);
       // Utility untuk set timeout dan simpan ID-nya
       function setAnimationTimeout(fn, delay) {
         const id = setTimeout(fn, delay);
