@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ucapan Pernikahan</title>
+
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- AOS CSS (Animasi) -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css"
+      rel="stylesheet"
+    />
+
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@300;400;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Scheherazade+New&family=Open+Sans&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      body {
+        font-family: "Poppins", sans-serif;
+        background-color: #383737; /* semi transparan hitam */
+        text-shadow: none !important;
+      }
+
+      .handwriting-heading {
+        font-family: "Great Vibes", cursive;
+        font-size: 2.2rem;
+      }
+
+      .mobile-wrapper {
+        max-width: 430px;
+        margin: auto;
+        border: 1px solid #ddd;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        height: 100vh; /* tinggi penuh viewport */
+        overflow: hidden; /* supaya scroll disembunyikan */
+        background-image: url("/asset/img/background.png");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        display: flex;
+        flex-direction: column;
+        color: white;
+        text-shadow: 1px 1px 2px black;
+        position: relative;
+      }
+
+      /* Container yang menampung semua komponen carousel */
+      .carousel-container {
+        flex: 1;
+        overflow-y: hidden;
+        scroll-behavior: smooth;
+        position: relative;
+      }
+
+      /* Kontainer yang akan di-scroll dengan height = 300% karena 3 komponen */
+      .carousel-inner {
+        height: 300vh; /* 3 komponen, masing2 100vh */
+        transition: transform 0.5s ease-in-out;
+      }
+
+      /* Setiap komponen full tinggi viewport .mobile-wrapper */
+      .component {
+        height: 100vh;
+        padding: 30px 20px;
+        box-sizing: border-box;
+      }
+
+      .component-1 {
+        background: rgba(44, 44, 44, 0.8);
+        color: #e6e6e6;
+      }
+      .component-2 {
+        background: rgba(44, 44, 44, 0.8);
+        color: #e6e6e6;
+      }
+      .component-3 {
+        background: rgba(44, 44, 44, 0.8);
+        color: #e6e6e6;
+      }
+
+      /* Dot Indicators */
+      .carousel-dots {
+        position: absolute;
+        bottom: 70px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 8px;
+        z-index: 15;
+      }
+
+      .dot {
+        width: 12px;
+        height: 12px;
+        margin-bottom: 48px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.4);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid rgba(255, 255, 255, 0.6);
+      }
+
+      .dot.active {
+        background: rgba(252, 202, 140, 0.9);
+        border-color: rgba(252, 202, 140, 1);
+        transform: scale(1.2);
+      }
+
+      .dot:hover {
+        background: rgba(255, 255, 255, 0.7);
+        transform: scale(1.1);
+      }
+
+      .dot.active:hover {
+        background: rgb(252, 202, 140);
+        transform: scale(1.2);
+      }
+
+      /* Tombol panah */
+      .btn-scroll {
+        position: absolute;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(252, 202, 140, 0.9);
+        border: none;
+        border-radius: 50%;
+        width: 48px;
+        height: 48px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+        animation: floatUpDown 2s ease-in-out infinite;
+        z-index: 10;
+        transition: all 0.3s ease;
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .btn-scroll.hidden {
+        opacity: 0;
+        visibility: hidden;
+      }
+
+      .btn-scroll:hover {
+        background: rgb(252, 202, 140);
+      }
+
+      @keyframes floatUpDown {
+        0%,
+        100% {
+          transform: translateX(-50%) translateY(0);
+        }
+        50% {
+          transform: translateX(-50%) translateY(-10px);
+        }
+      }
+
+      .btn-scroll svg {
+        width: 24px;
+        height: 24px;
+        fill: #383737;
+      }
+
+      /* Animasi cincin */
+      .ring-animation-container {
+        height: 100%;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .ring-icon {
+        width: auto;
+        height: 80px;
+        opacity: 0;
+        transform: scale(0);
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        margin-left: -40px;
+        margin-top: -40px;
+        transition: all 1s ease;
+      }
+
+      .ring-icon.animate {
+        animation: ringPopUpAndMove 2.5s ease-in-out forwards;
+      }
+
+      @keyframes ringPopUpAndMove {
+        0% {
+          opacity: 0;
+          transform: scale(0);
+          top: 50%;
+        }
+        30% {
+          opacity: 1;
+          transform: scale(1.3);
+          top: 50%;
+        }
+        50% {
+          opacity: 1;
+          transform: scale(1);
+          top: 50%;
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1);
+          top: 80px;
+        }
+      }
+
+      .wedding-text {
+        opacity: 0;
+        font-weight: bold;
+        font-size: 1.6rem;
+        color: #e6e6e6;
+        text-align: center;
+        margin-top: 160px;
+        transition: opacity 0.8s ease;
+      }
+
+      .wedding-text.show {
+        opacity: 1;
+      }
+
+      .wedding-text span {
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        display: inline-block;
+      }
+
+      .animated-image-row {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-top: 20px;
+        width: 100%; /* penuh lebar induk */
+        height: auto; /* sesuaikan tinggi container */
+        opacity: 0; /* awalnya sembunyi */
+        transform: translateY(
+          20px
+        ); /* sedikit ke bawah untuk efek fade in dari bawah */
+        transition: opacity 0.8s ease-in-out, transform 0.8s ease-in-out;
+      }
+
+      /* FIX: Tambahkan CSS untuk class show */
+      .animated-image-row.show {
+        opacity: 1;
+        transform: translateY(0); /* kembali ke posisi normal */
+      }
+
+      .bounce-img {
+        width: 100%; /* gambar mengisi tiap kolom */
+        max-width: 200px; /* batas maksimal agar tidak terlalu besar */
+        object-fit: contain;
+        animation-duration: 1.5s;
+        animation-iteration-count: infinite;
+        animation-timing-function: ease-in-out;
+      }
+
+      .bounce-img.left {
+        animation-name: bounceUpDown;
+      }
+
+      .bounce-img.right {
+        animation-name: bounceDownUp;
+      }
+
+      @keyframes bounceUpDown {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+      }
+
+      @keyframes bounceDownUp {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(10px);
+        }
+      }
+
+      /* Font khusus untuk teks Arab atau transliterasi */
+      .arabic-text {
+        font-family: "Scheherazade New", "Amiri", serif; /* Font Arabic-style */
+        font-size: 1.3rem;
+        color: #ffbe69;
+        display: block;
+        margin-bottom: 10px;
+      }
+
+      /* Font berbeda untuk terjemahan */
+      .translation {
+        font-family: "Open Sans", sans-serif;
+        font-size: 1rem;
+        color: #666;
+      }
+
+      /* Kontainer dan animasi */
+      .wedding-blessing {
+        text-align: center;
+        margin-top: 20px;
+        opacity: 0;
+        transform: translateY(
+          30px
+        ); /* sedikit ke bawah untuk efek fade in dari bawah */
+        transition: opacity 1s ease-in-out, transform 1s ease-in-out;
+      }
+
+      .wedding-blessing.show {
+        opacity: 1;
+        transform: translateY(0); /* kembali ke posisi normal */
+      }
+    </style>
+  </head>
+  <body>
+    <div class="mobile-wrapper">
+      <div class="carousel-container" id="carouselContainer">
+        <div class="carousel-inner" id="carouselInner">
+          <div class="component component-1">
+            <div class="content text-center" data-aos="fade">
+              <h1 class="handwriting-heading mb-4">
+                Dari
+                <span style="color: rgb(252, 202, 140); font-weight: bold"
+                  >Mula</span
+                ><br />
+                hingga Hari
+                <span style="color: rgb(252, 202, 140); font-weight: bold"
+                  >Bahagia</span
+                >
+              </h1>
+              <img
+                src="/asset/img/msrizal1.png"
+                alt="Gambar 1"
+                style="
+                  max-width: 100%;
+                  border-radius: 10px;
+                  margin-top: 20px;
+                  margin-bottom: 20px;
+                "
+              />
+              <img
+                src="/asset/img/msrizal2.png"
+                alt="Gambar 2"
+                style="max-width: 100%; border-radius: 10px"
+              />
+            </div>
+          </div>
+          <div class="component component-2">
+            <div class="content">
+              <div class="ring-animation-container">
+                <img
+                  id="ringIcon"
+                  src="/asset/img/ring-icon.png"
+                  alt="Ring Icon"
+                  class="ring-icon"
+                />
+                <div id="weddingText" class="wedding-text">
+                  Happy Wedding<br />Mas Rizal & Mbak Desy
+                </div>
+                <div class="animated-image-row" id="animatedImages">
+                  <img
+                    src="/asset/img/component2-1.png"
+                    alt="Flower Left"
+                    class="bounce-img left"
+                  />
+                  <img
+                    src="/asset/img/component2-2.png"
+                    alt="Flower Right"
+                    class="bounce-img right"
+                  />
+                </div>
+                <div class="wedding-blessing" id="weddingBlessing">
+                  <span class="arabic-text">
+                    Baarakallahu laka wa baaraka 'alayka, wa jama'a baynakumaa
+                    fii khayr. </span
+                  ><br />
+                  <span class="translation">
+                    Semoga Allah memberkahimu dan pasanganmu, serta mengumpulkan
+                    kalian dalam kebaikan.
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="component component-3">
+            <div class="content text-center" data-aos="fade-up">
+              <!-- Konten komponen 3 -->
+              <h2>Konten Slide 3</h2>
+              <p>Slide terakhir dari wedding card</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dot Indicators -->
+      <div class="carousel-dots" id="carouselDots">
+        <div class="dot active" data-index="0"></div>
+        <div class="dot" data-index="1"></div>
+        <div class="dot" data-index="2"></div>
+      </div>
+
+      <button
+        class="btn-scroll"
+        id="btnScroll"
+        aria-label="Scroll ke komponen berikutnya"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M7.41 8.59 12 13.17l4.59-4.58L18 10l-6 6-6-6z" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- AOS JS -->
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+
+    <script>
+      AOS.init({
+        duration: 3000,
+        once: true,
+      });
+
+      const btnScroll = document.getElementById("btnScroll");
+      const carouselInner = document.getElementById("carouselInner");
+      const dots = document.querySelectorAll(".dot");
+      const ringIcon = document.getElementById("ringIcon");
+      const weddingText = document.getElementById("weddingText");
+      const animatedImages = document.getElementById("animatedImages");
+      const weddingBlessing = document.getElementById("weddingBlessing");
+
+      let currentIndex = 0;
+      const maxIndex = 2; // indeks komponen terakhir (0,1,2)
+      let textAnimationPromise = null; // Untuk track promise animasi text
+
+      let animationTimeouts = [];
+      let animationInProgress = false;
+
+      // Utility untuk set timeout dan simpan ID-nya
+      function setAnimationTimeout(fn, delay) {
+        const id = setTimeout(fn, delay);
+        animationTimeouts.push(id);
+        return id;
+      }
+
+      // Batalkan semua timeout animasi
+      function clearAnimationTimeouts() {
+        animationTimeouts.forEach(clearTimeout);
+        animationTimeouts = [];
+      }
+
+      // Perbaikan animateWeddingText dengan abort flag
+      function animateWeddingText() {
+        return new Promise((resolve) => {
+          const textContainer = document.getElementById("weddingText");
+          const rawText = "Happy Wedding\nMas Rizal & Mbak Desy";
+          const chars = Array.from(rawText);
+
+          textContainer.innerHTML = "";
+          let visibleCharCount = 0;
+          let aborted = false;
+
+          // Jika animasi dibatalkan, kita set flag ini dari luar
+          const abort = () => {
+            aborted = true;
+            // langsung tampilkan semua teks tanpa animasi
+            textContainer.innerHTML = rawText.replace(/\n/g, "<br>");
+            resolve();
+          };
+
+          // Simpan abort agar bisa dipanggil dari luar
+          animateWeddingText.abort = abort;
+
+          chars.forEach((char, index) => {
+            if (aborted) return;
+
+            let span;
+            if (char === "\n") {
+              span = document.createElement("br");
+              textContainer.appendChild(span);
+              return;
+            } else {
+              span = document.createElement("span");
+              span.innerHTML = char === " " ? "&nbsp;" : char;
+              span.style.opacity = 0;
+              span.style.transition = "opacity 0.3s ease";
+              span.style.display = "inline-block";
+              textContainer.appendChild(span);
+
+              setAnimationTimeout(() => {
+                if (!aborted) {
+                  span.style.opacity = 1;
+                }
+              }, visibleCharCount * 70);
+
+              visibleCharCount++;
+            }
+          });
+
+          // Resolve promise setelah animasi selesai
+          setAnimationTimeout(() => {
+            if (!aborted) resolve();
+          }, visibleCharCount * 70 + 500);
+        });
+      }
+
+      function resetComponent2Animations() {
+        clearAnimationTimeouts();
+        if (animateWeddingText.abort) {
+          animateWeddingText.abort();
+          animateWeddingText.abort = null;
+        }
+
+        ringIcon.classList.remove("animate");
+        weddingText.classList.remove("show");
+        animatedImages.classList.remove("show");
+        weddingBlessing.classList.remove("show");
+
+        weddingText.innerHTML = "Happy Wedding<br />Mas Rizal & Mbak Desy";
+
+        animatedImages.style.transform = "translateY(20px)";
+        weddingBlessing.style.transform = "translateY(30px)";
+      }
+
+      function hideComponent2Immediately() {
+        clearAnimationTimeouts();
+        if (animateWeddingText.abort) {
+          animateWeddingText.abort();
+          animateWeddingText.abort = null;
+        }
+
+        ringIcon.classList.remove("animate");
+        weddingText.classList.remove("show");
+        animatedImages.classList.remove("show");
+        weddingBlessing.classList.remove("show");
+
+        weddingText.innerHTML = "";
+
+        animatedImages.style.transform = "translateY(0)";
+        weddingBlessing.style.transform = "translateY(0)";
+      }
+
+      function triggerRingAnimation() {
+        return new Promise((resolve) => {
+          clearAnimationTimeouts();
+          resetComponent2Animations();
+
+          animationInProgress = true;
+
+          setAnimationTimeout(() => {
+            ringIcon.classList.add("animate");
+          }, 100);
+
+          setAnimationTimeout(() => {
+            weddingText.classList.add("show");
+
+            textAnimationPromise = animateWeddingText();
+            textAnimationPromise.then(() => {
+              setAnimationTimeout(() => {
+                animatedImages.classList.add("show");
+              }, 200);
+
+              setAnimationTimeout(() => {
+                weddingBlessing.classList.add("show");
+                animationInProgress = false;
+                resolve();
+              }, 600);
+            });
+          }, 2600);
+        });
+      }
+
+      // Function untuk update dot aktif dan button visibility
+      function updateDots() {
+        dots.forEach((dot, index) => {
+          if (index === currentIndex) {
+            dot.classList.add("active");
+          } else {
+            dot.classList.remove("active");
+          }
+        });
+
+        // Sembunyikan button di komponen ketiga (index 2)
+        if (currentIndex === 2) {
+          btnScroll.classList.add("hidden");
+        } else {
+          btnScroll.classList.remove("hidden");
+        }
+      }
+
+      // Function untuk pindah ke slide tertentu
+
+      function goToSlide(index) {
+        currentIndex = index;
+        carouselInner.style.transform = `translateY(-${currentIndex * 100}vh)`;
+        updateDots();
+
+        if (currentIndex === 1) {
+          if (animationInProgress) {
+            // Jika animasi sedang berjalan, reset dulu agar restart animasi dengan rapi
+            resetComponent2Animations();
+            hideComponent2Immediately();
+          }
+          triggerRingAnimation();
+        } else {
+          // Jika pindah ke slide lain, reset animasi biar tidak tertinggal
+          resetComponent2Animations();
+          hideComponent2Immediately();
+        }
+      }
+      // Event listener untuk button scroll
+      btnScroll.addEventListener("click", () => {
+        currentIndex++;
+        if (currentIndex > maxIndex) {
+          currentIndex = 0;
+        }
+        goToSlide(currentIndex);
+      });
+
+      // Event listener untuk dot indicators
+      dots.forEach((dot, index) => {
+        dot.addEventListener("click", () => {
+          goToSlide(index);
+        });
+      });
+
+      // Optional: untuk scroll mouse/touch swipe pindah slide
+      let startY = 0;
+      let endY = 0;
+      const threshold = 50; // minimal jarak swipe agar pindah slide
+
+      const carouselContainer = document.getElementById("carouselContainer");
+
+      carouselContainer.addEventListener("touchstart", (e) => {
+        startY = e.touches[0].clientY;
+      });
+
+      carouselContainer.addEventListener("touchend", (e) => {
+        endY = e.changedTouches[0].clientY;
+        let diff = startY - endY;
+        if (diff > threshold) {
+          // swipe up -> next slide
+          currentIndex++;
+          if (currentIndex > maxIndex) currentIndex = maxIndex;
+        } else if (diff < -threshold) {
+          // swipe down -> prev slide
+          currentIndex--;
+          if (currentIndex < 0) currentIndex = 0;
+        }
+        goToSlide(currentIndex);
+      });
+    </script>
+  </body>
+</html>
