@@ -14,7 +14,13 @@ This is a wedding greeting webpage project specifically designed for a mobile-fi
 * **📸 Images & Illustrations** — Supports images with engaging bounce animations.
 
 ---
-
+        "RIAN.mp4",
+        "ARVA.mp4",
+        "FAIT.mp4",
+        "OCIT.mp4",
+        "OPUNG.mp4",
+        "YUGI.mp4",
+        "ZIDAN.mp4",
 ## 📁 File Structure
 
 .
