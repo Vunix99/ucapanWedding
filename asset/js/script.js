@@ -201,35 +201,86 @@ async function loadAsset(url) {
   }
 }
 
+async function loadAssetWithProgress(url) {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const reader = response.body.getReader();
+    const contentLength = response.headers.get("content-length");
+    let assetSize = contentLength ? parseInt(contentLength, 10) : 0; // Fallback if no content-length
+
+    let receivedLength = 0;
+    const chunks = [];
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) {
+        break;
+      }
+
+      chunks.push(value);
+      receivedLength += value.length;
+
+      // Update global loadedBytes and progress bar
+      loadedBytes += value.length; // This is the crucial part for real-time update
+      updateProgress(loadedBytes, totalExpectedBytes);
+    }
+
+    // After loading, the asset is fully received. We don't need to return the blob for this specific use case,
+    // as we just need to know it's loaded and update the progress.
+    // If you need the asset content, you'd combine chunks:
+    // const blob = new Blob(chunks);
+    // return blob;
+
+    return receivedLength; // Return the actual loaded size for verification if needed
+  } catch (error) {
+    console.warn(`Failed to load asset with progress for ${url}:`, error);
+    return 0;
+  }
+}
+
 async function startLoadingAssets() {
-  let currentLoadedBytes = 0;
-  let totalKnownBytes = 0;
+  loadedBytes = 0; // Reset loaded bytes for a fresh start
+  totalExpectedBytes = 0;
   const assetSizes = {};
 
+  // First, get the total size of all assets using HEAD requests
+  // This helps us calculate the totalExpectedBytes more accurately before starting the full download
   for (const assetPath of assetsToLoad) {
     try {
       const response = await fetch(assetPath, { method: "HEAD" });
       const contentLength = response.headers.get("content-length");
       if (contentLength) {
         const size = parseInt(contentLength, 10);
-        totalKnownBytes += size;
-        assetSizes[assetPath] = size;
+        totalExpectedBytes += size;
+        assetSizes[assetPath] = size; // Store size for each asset if needed later
       } else {
         console.warn(
-          `Content-Length not available for ${assetPath}. Skipping for total calculation for now.`
+          `Content-Length not available for ${assetPath}. Estimation might be less accurate.`
         );
+        // If content-length is not available, we can either skip it or use a default/estimated size.
+        // For accurate real-time progress, content-length is highly recommended for all assets.
+        // For simplicity, we'll assume 0 if not present, but in a real app, you might want a fallback.
+        totalExpectedBytes += 0;
       }
     } catch (error) {
       console.warn(`Failed HEAD request for ${assetPath}:`, error);
+      totalExpectedBytes += 0;
     }
   }
-  totalExpectedBytes = totalKnownBytes;
+
   totalSizeSpan.textContent = (totalExpectedBytes / (1024 * 1024)).toFixed(1);
 
+  // Now, load each asset one by one, updating progress as chunks are received
   for (const assetPath of assetsToLoad) {
-    currentLoadedBytes += assetSizes[assetPath] || 0;
-    updateProgress(currentLoadedBytes, totalExpectedBytes);
+    await loadAssetWithProgress(assetPath);
   }
+
+  // Ensure progress is 100% and preloader hides even if some content-lengths were missing
+  updateProgress(totalExpectedBytes, totalExpectedBytes);
 }
 
 // --- End Preloader Logic ---
@@ -842,7 +893,7 @@ function goToSlide(index) {
 
   // --- Logika untuk Component 4 ---
   if (currentIndex === 3) {
-        stopAllVideos(); // Menghentikan semua video jika ada
+    stopAllVideos(); // Menghentikan semua video jika ada
     resumeBackgroundMusic(); // Melanjutkan musik latar
     thanks.classList.remove("aos-animate");
     full_member_photo.classList.remove("aos-animate");
