@@ -47,6 +47,8 @@ const videoFilenames = [
   "OPUNG.mp4",
   "YUGI.mp4",
   "ZIDAN.mp4",
+  "MUKLAS.mp4",
+
   // Tambahkan semua nama file .mp4 Anda di sini
 ];
 
