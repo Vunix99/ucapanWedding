@@ -1,3 +1,6 @@
+// Hapus atau komentari baris ini jika Anda tidak lagi menggunakan GSAP sama sekali
+// import { gsap } from "gsap"; // <--- HAPUS ATAU KOMENTARI INI
+
 AOS.init({
   duration: 1000, // Durasi default untuk animasi
   once: true, // Animasi hanya berjalan sekali
@@ -19,6 +22,13 @@ const subtext3 = document.getElementById("subtext3");
 const videoCarouselContainer = document.getElementById(
   "videoCarouselContainer"
 );
+
+// Elemen-elemen untuk Component 4
+const component4 = document.querySelector(".component-4"); // PENTING: Ambil elemen div .component-4
+const thanks = document.getElementById("thanks");
+const full_member_photo = document.getElementById("full_member_photo");
+const lastMessage = document.getElementById("lastMessage");
+const signature4 = document.getElementById("signature4");
 
 // Video Carousel Elements
 const videoCarousel = document.getElementById("videoCarousel");
@@ -48,6 +58,7 @@ const videoFilenames = [
   "YUGI.mp4",
   "ZIDAN.mp4",
   "MUKLAS.mp4",
+  "ACUN.mp4",
 
   // Tambahkan semua nama file .mp4 Anda di sini
 ];
@@ -87,8 +98,7 @@ function getRandomCaption() {
     availableCaptions = allCaptions;
   }
   const randomIndex = Math.floor(Math.random() * availableCaptions.length);
-  const selectedCaption = availableCaptions[randomIndex];
-  usedCaptions.add(selectedCaption);
+  const selectedCaption = availableCaptions[randomIndex]; // Corrected  usedCaptions.add(selectedCaption);
   return selectedCaption;
 }
 
@@ -105,19 +115,15 @@ let currentVideoIndex = 0;
 let totalVideos = 0;
 
 let currentIndex = 0;
-const maxIndex = 2;
+const maxIndex = 3;
 let textAnimationPromise = null;
 
 let animationTimeouts = [];
-let animationInProgress = false; // Indicates if any animation for component 2 is currently running/scheduled
-let component2AnimationCompleted = false; // New flag to track if component 2 animation has fully finished
+let animationInProgress = false;
+let component2AnimationCompleted = false;
 
 // --- Preloader Logic ---
-// Remove ASSET_SIZES if you want to rely purely on Content-Length,
-// but keep it as a fallback or for assets where Content-Length might not be consistently sent.
-// const ASSET_SIZES = { ... }; // You might still keep this for fallback/initial estimation
-
-let totalExpectedBytes = 0; // This will now be dynamically calculated
+let totalExpectedBytes = 0;
 let loadedBytes = 0;
 
 // Add main images and music
@@ -138,13 +144,10 @@ const videoAssetPaths = videoFilenames.map(
 
 const assetsToLoad = [...initialAssets, ...videoAssetPaths];
 
-// Initially, estimate total size or set to 0.
-// We'll update totalExpectedBytes as we get Content-Length from responses.
-totalExpectedBytes = 0; // Initialize to 0, it will be populated as we get actual sizes
+totalExpectedBytes = 0;
 
 // Function to update progress display
 function updateProgress(currentLoadedBytes, currentTotalExpectedBytes) {
-  // Ensure totalExpectedBytes is not zero to prevent division by zero
   const percentage =
     currentTotalExpectedBytes > 0
       ? Math.min(
@@ -161,7 +164,6 @@ function updateProgress(currentLoadedBytes, currentTotalExpectedBytes) {
   progressPercentageSpan.textContent = percentage;
 
   if (percentage >= 100 && currentLoadedBytes >= currentTotalExpectedBytes) {
-    // Ensure both conditions for completion
     setTimeout(() => {
       preloader.classList.add("hidden");
       setTimeout(() => {
@@ -174,44 +176,36 @@ function updateProgress(currentLoadedBytes, currentTotalExpectedBytes) {
 
 async function loadAsset(url) {
   try {
-    const response = await fetch(url, { method: "HEAD" }); // Use HEAD request to get headers first
+    const response = await fetch(url, { method: "HEAD" });
     const contentLength = response.headers.get("content-length");
     let assetSize = 0;
 
     if (contentLength) {
       assetSize = parseInt(contentLength, 10);
     } else {
-      // Fallback: If Content-Length is not available (e.g., CORS issues, or server doesn't send it)
-      // You might use your ASSET_SIZES map here as a fallback or a default small size.
       console.warn(
         `Content-Length not available for ${url}. Using estimated size if available.`
       );
-      // If ASSET_SIZES exists, you can use it here as a fallback:
-      // assetSize = ASSET_SIZES[url] || (url.includes(".mp4") ? ASSET_SIZES["video_metadata"] : 0);
-      // For now, we'll just return 0 if no Content-Length
-      assetSize = 0; // Or a small default for unmeasurable assets
+      assetSize = 0;
     }
 
-    // Now, actually fetch the asset to mark it as 'loaded'
-    // We're essentially doing a two-step: get size, then 'load' (which happens very fast now)
     const actualFetch = await fetch(url);
     if (!actualFetch.ok) {
       throw new Error(`HTTP error! status: ${actualFetch.status}`);
     }
 
-    return assetSize; // Return the actual (or estimated) size
+    return assetSize;
   } catch (error) {
     console.warn(`Failed to load asset or get size for ${url}:`, error);
-    return 0; // Return 0 bytes on error
+    return 0;
   }
 }
 
 async function startLoadingAssets() {
   let currentLoadedBytes = 0;
   let totalKnownBytes = 0;
-  const assetSizes = {}; // Store known sizes here
+  const assetSizes = {};
 
-  // First pass: Try to get total expected bytes by HEAD requests
   for (const assetPath of assetsToLoad) {
     try {
       const response = await fetch(assetPath, { method: "HEAD" });
@@ -221,11 +215,6 @@ async function startLoadingAssets() {
         totalKnownBytes += size;
         assetSizes[assetPath] = size;
       } else {
-        // If Content-Length isn't available, make a reasonable estimate
-        // You can uncomment and use your ASSET_SIZES object here if you have it
-        // const estimatedSize = ASSET_SIZES[assetPath] || (assetPath.includes(".mp4") ? ASSET_SIZES["video_metadata"] : 0);
-        // totalKnownBytes += estimatedSize;
-        // assetSizes[assetPath] = estimatedSize;
         console.warn(
           `Content-Length not available for ${assetPath}. Skipping for total calculation for now.`
         );
@@ -234,34 +223,12 @@ async function startLoadingAssets() {
       console.warn(`Failed HEAD request for ${assetPath}:`, error);
     }
   }
-  totalExpectedBytes = totalKnownBytes; // Set the total expected bytes
-  totalSizeSpan.textContent = (totalExpectedBytes / (1024 * 1024)).toFixed(1); // Update total size display
+  totalExpectedBytes = totalKnownBytes;
+  totalSizeSpan.textContent = (totalExpectedBytes / (1024 * 1024)).toFixed(1);
 
-  // Second pass: Actually load the assets and update progress
   for (const assetPath of assetsToLoad) {
-    // You might not even need the 'loadAsset' function if you're just doing HEAD requests
-    // and then letting the browser's normal loading handle the rest.
-    // For a more precise progress bar *during* loading, you'd use fetch with readable streams.
-    // However, for simply displaying the total loaded vs. total expected, this is simpler.
-
-    // Simulate loading by waiting a bit and then adding the asset's size
-    // In a real scenario, you'd track progress of the actual download.
-    currentLoadedBytes += assetSizes[assetPath] || 0; // Add the known size
+    currentLoadedBytes += assetSizes[assetPath] || 0;
     updateProgress(currentLoadedBytes, totalExpectedBytes);
-    // For a true progress bar, this is where you'd actually fetch the asset with progress
-    // const res = await fetch(assetPath); // Or just let the browser fetch it normally.
-    // If you really want detailed progress per asset:
-    // const response = await fetch(assetPath);
-    // const reader = response.body.getReader();
-    // let receivedLength = 0; // bytes received
-    // while (true) {
-    //   const { done, value } = await reader.read();
-    //   if (done) {
-    //     break;
-    //   }
-    //   receivedLength += value.length;
-    //   // Update progress here with (currentLoadedBytes - assetSizes[assetPath] + receivedLength)
-    // }
   }
 }
 
@@ -276,21 +243,19 @@ window.addEventListener("resize", setRealViewportHeight);
 window.addEventListener("orientationchange", setRealViewportHeight);
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Start preloading assets immediately
   startLoadingAssets();
   setRealViewportHeight();
 });
 
 viewMessageButton.addEventListener("click", () => {
   initialMessage.classList.remove("show");
-  initialMessage.classList.add("hidden"); // Hide the initial message
+  initialMessage.classList.add("hidden");
 
   setTimeout(() => {
-    mobileWrapper.classList.add("show-content"); // Show the main content
-    document.body.style.overflow = "auto"; // Allow scrolling again
-    initVideoCarousel(); // Initialize video carousel and attempt to play music
+    mobileWrapper.classList.add("show-content");
+    document.body.style.overflow = "auto";
+    initVideoCarousel();
 
-    // Attempt to play background music on user interaction
     if (backgroundMusic && backgroundMusic.paused) {
       const playPromise = backgroundMusic.play();
       if (playPromise !== undefined) {
@@ -300,11 +265,10 @@ viewMessageButton.addEventListener("click", () => {
           })
           .catch((error) => {
             console.warn("Autoplay prevented:", error);
-            // Autoplay was prevented. User might need to manually enable sound.
           });
       }
     }
-  }, 500); // Delay to match initialMessage transition
+  }, 500);
 });
 
 function setAnimationTimeout(fn, delay) {
@@ -406,7 +370,6 @@ function hideComponent2Immediately() {
 
 function triggerRingAnimation() {
   return new Promise((resolve) => {
-    // Set flags at the start of animation
     animationInProgress = true;
     component2AnimationCompleted = false;
 
@@ -414,7 +377,6 @@ function triggerRingAnimation() {
 
     clearAnimationTimeouts();
 
-    // Reset immediately before starting new animation
     resetComponent2Animations();
 
     setAnimationTimeout(() => {
@@ -433,9 +395,8 @@ function triggerRingAnimation() {
         setAnimationTimeout(() => {
           weddingBlessing.classList.add("show");
 
-          // All visual animations are done, set component2AnimationCompleted to true
           component2AnimationCompleted = true;
-          animationInProgress = false; // Animation sequence fully completed
+          animationInProgress = false;
           console.log("Component 2 animation finished.");
           resolve();
         }, 600);
@@ -478,34 +439,29 @@ function loadVideos() {
     videoCarousel.appendChild(videoItem);
   });
 
-  // Clone first and last items for seamless wrap around
   if (totalVideos > 1) {
-    // Clone last item and prepend
     const lastClone = videoCarousel.lastElementChild.cloneNode(true);
     lastClone.classList.add("clone");
     videoCarousel.insertBefore(lastClone, videoCarousel.firstElementChild);
 
-    // Clone first item and append
-    const firstClone = videoCarousel.children[1].cloneNode(true); // children[1] because [0] is now the clone
+    const firstClone = videoCarousel.children[1].cloneNode(true);
     firstClone.classList.add("clone");
     videoCarousel.appendChild(firstClone);
 
-    // Set initial position (offset by one because of prepended clone)
     currentVideoIndex = 0;
     const initialOffset = -(currentVideoIndex + 1) * 100;
     videoCarousel.style.transform = `translateX(${initialOffset}%)`;
-    videoCarousel.style.transition = "none"; // No transition for initial setup
+    videoCarousel.style.transition = "none";
   }
 }
 
-// Function to stop all videos in the carousel
 async function stopAllVideos() {
   const allVideoElements = videoCarousel.querySelectorAll("video");
-  let anyVideoPlaying = false; // Track if any video is playing or about to play
+  let anyVideoPlaying = false;
 
   const stopPromises = Array.from(allVideoElements).map(async (video) => {
     if (video && !video.paused) {
-      anyVideoPlaying = true; // A video was playing
+      anyVideoPlaying = true;
       try {
         await new Promise((resolve) => {
           const checkAndPause = () => {
@@ -532,7 +488,6 @@ async function stopAllVideos() {
   await Promise.allSettled(stopPromises);
 }
 
-// New: Function to pause background music
 function pauseBackgroundMusic() {
   if (backgroundMusic && !backgroundMusic.paused) {
     backgroundMusic.pause();
@@ -540,9 +495,7 @@ function pauseBackgroundMusic() {
   }
 }
 
-// New: Function to resume background music
 function resumeBackgroundMusic() {
-  // Attempt to play immediately when called, but handle the promise
   if (backgroundMusic && backgroundMusic.paused) {
     const playPromise = backgroundMusic.play();
     if (playPromise !== undefined) {
@@ -555,26 +508,22 @@ function resumeBackgroundMusic() {
             "Failed to resume background music (likely autoplay policy):",
             error
           );
-          // This error often means autoplay was prevented. User interaction will still be needed.
         });
     }
   }
 }
-// Track user interaction (still useful for video playback with sound)
+
 let userHasInteracted = false;
-let isTransitioning = false; // Flag to prevent multiple transitions
+let isTransitioning = false;
 
 function detectUserInteraction() {
   if (!userHasInteracted) {
     userHasInteracted = true;
     console.log("User interaction detected - videos can now play with sound.");
-    // The background music should already be attempting to play on load,
-    // but this ensures it plays if the initial attempt failed due to browser policies.
     resumeBackgroundMusic();
   }
 }
 
-// Add event listeners to detect user interaction
 document.addEventListener("click", detectUserInteraction, {
   once: false,
 });
@@ -585,12 +534,10 @@ document.addEventListener("touchstart", detectUserInteraction, {
   once: false,
 });
 
-// Function to play a specific video (improved)
-// Function to play a specific video (improved)
 async function playVideo(videoElement) {
   if (!videoElement) return;
 
-  pauseBackgroundMusic(); // Pause music when a video is about to play
+  pauseBackgroundMusic();
 
   try {
     if (videoElement.readyState < 2) {
@@ -623,9 +570,7 @@ async function playVideo(videoElement) {
 
     if (userHasInteracted) {
       videoElement.muted = false;
-      // --- UBAH INI: Atur volume ke 1.0 (100% maksimal) ---
       videoElement.volume = 1.0;
-      // --- END UBAH ---
       try {
         const playPromise = videoElement.play();
         if (playPromise !== undefined) {
@@ -639,9 +584,7 @@ async function playVideo(videoElement) {
     }
 
     videoElement.muted = true;
-    // --- UBAH INI JUGA: Atur volume ke 1.0 (100% maksimal) ---
     videoElement.volume = 1.0;
-    // --- END UBAH ---
     const playPromise = videoElement.play();
 
     if (playPromise !== undefined) {
@@ -653,9 +596,10 @@ async function playVideo(videoElement) {
     console.warn("Video playback failed:", error);
     videoElement.pause();
     videoElement.muted = true;
-    resumeBackgroundMusic(); // Resume music if video fails to play
+    resumeBackgroundMusic();
   }
 }
+
 function showUnmuteIndicator(videoElement) {
   const existingIndicator =
     videoElement.parentElement.querySelector(".unmute-indicator");
@@ -699,34 +643,28 @@ function showUnmuteIndicator(videoElement) {
 }
 
 async function showVideo(index, direction = "none") {
-  if (isTransitioning) return; // Prevent multiple transitions
+  if (isTransitioning) return;
 
   try {
     isTransitioning = true;
     await stopAllVideos();
     await new Promise((resolve) => setTimeout(resolve, 50));
 
-    // Calculate position with clones (add 1 because of prepended clone)
     const targetPosition = -(index + 1) * 100;
 
-    // Enable transition for smooth movement
     videoCarousel.style.transition = "transform 0.3s ease-in-out";
     videoCarousel.style.transform = `translateX(${targetPosition}%)`;
 
-    // Handle wrap around after transition
     const handleTransitionEnd = () => {
       videoCarousel.removeEventListener("transitionend", handleTransitionEnd);
 
-      // Check if we need to handle wrap around
       if (index === -1) {
-        // We went to the clone of last item, now jump to actual last item
         currentVideoIndex = totalVideos - 1;
         videoCarousel.style.transition = "none";
         videoCarousel.style.transform = `translateX(${
           -(currentVideoIndex + 1) * 100
         }%)`;
       } else if (index === totalVideos) {
-        // We went to the clone of first item, now jump to actual first item
         currentVideoIndex = 0;
         videoCarousel.style.transition = "none";
         videoCarousel.style.transform = `translateX(${
@@ -738,7 +676,6 @@ async function showVideo(index, direction = "none") {
 
       isTransitioning = false;
 
-      // Play the active video
       const activeVideoElement = getActiveVideoElement();
       if (activeVideoElement) {
         playVideo(activeVideoElement);
@@ -747,7 +684,6 @@ async function showVideo(index, direction = "none") {
 
     videoCarousel.addEventListener("transitionend", handleTransitionEnd);
 
-    // Fallback in case transitionend doesn't fire
     setTimeout(() => {
       if (isTransitioning) {
         handleTransitionEnd();
@@ -760,7 +696,6 @@ async function showVideo(index, direction = "none") {
 }
 
 function getActiveVideoElement() {
-  // Get the actual active video (not from clones)
   const allVideoItems = Array.from(videoCarousel.children).filter(
     (item) => !item.classList.contains("clone")
   );
@@ -771,7 +706,6 @@ function nextVideo() {
   if (isTransitioning) return;
 
   if (currentVideoIndex === totalVideos - 1) {
-    // Going from last to first - use clone for smooth transition
     showVideo(totalVideos, "forward");
   } else {
     showVideo(currentVideoIndex + 1, "forward");
@@ -782,14 +716,12 @@ function prevVideo() {
   if (isTransitioning) return;
 
   if (currentVideoIndex === 0) {
-    // Going from first to last - use clone for smooth transition
     showVideo(-1, "backward");
   } else {
     showVideo(currentVideoIndex - 1, "backward");
   }
 }
 
-// Event listeners
 prevVideoBtn.addEventListener("click", () => {
   detectUserInteraction();
   prevVideo();
@@ -800,7 +732,6 @@ nextVideoBtn.addEventListener("click", () => {
   nextVideo();
 });
 
-// Touch controls
 let startVideoX = 0;
 let endVideoX = 0;
 const videoCarouselThreshold = 50;
@@ -816,22 +747,16 @@ videoCarousel.addEventListener("touchend", (e) => {
 
   if (Math.abs(diffX) > videoCarouselThreshold && !isTransitioning) {
     if (diffX > 0) {
-      nextVideo(); // Swipe left - next video
+      nextVideo();
     } else {
-      prevVideo(); // Swipe right - previous video
+      prevVideo();
     }
   }
 });
 
-// Initialize carousel
 function initVideoCarousel() {
   loadVideos();
-  // REMOVE or comment out the direct call to resumeBackgroundMusic() here for initial load
-  // resumeBackgroundMusic(); // <--- REMOVE THIS LINE OR COMMENT IT OUT
-  // Video tidak akan diputar di sini lagi, hanya di goToSlide(2)
 }
-
-// --- End Video Carousel Functions ---
 
 function updateProgressBar() {
   progressBarSegments.forEach((segment, index) => {
@@ -842,7 +767,7 @@ function updateProgressBar() {
     }
   });
 
-  if (currentIndex === 2) {
+  if (currentIndex === maxIndex) {
     btnScroll.classList.add("hidden");
   } else {
     btnScroll.classList.remove("hidden");
@@ -850,21 +775,24 @@ function updateProgressBar() {
 }
 
 function goToSlide(index) {
-  const previousIndex = currentIndex;
-  currentIndex = index;
+  const previousIndex = currentIndex; // Menyimpan indeks sebelumnya
+  currentIndex = index; // Memperbarui indeks saat ini
+
+  // Mengubah posisi carousel secara vertikal
   carouselInner.style.transform = `translateY(-${currentIndex * 100}vh)`;
+
+  // Memperbarui tampilan progress bar (asumsi fungsi updateProgressBar() sudah ada)
   updateProgressBar();
 
-  // Handle animations for component 2
+  // --- Logika untuk Component 2 ---
   if (currentIndex === 1) {
-    stopAllVideos(); // Stop videos when entering component 2
-    resumeBackgroundMusic(); // Ensure music resumes when on component 2
+    stopAllVideos(); // Menghentikan semua video jika ada
+    resumeBackgroundMusic(); // Melanjutkan musik latar
 
-    // Only trigger animation if it's not already running AND hasn't completed yet
     if (!animationInProgress && !component2AnimationCompleted) {
-      triggerRingAnimation();
+      triggerRingAnimation(); // Memicu animasi cincin jika belum selesai
     } else if (component2AnimationCompleted) {
-      // If animation completed previously, just ensure elements are shown without re-animating
+      // Menambahkan kelas untuk menampilkan elemen jika animasi sudah selesai
       ringIcon.classList.add("animate");
       weddingText.classList.add("show");
       weddingText.innerHTML = "Happy Wedding<br />Mas Rizal & Mbak Desy";
@@ -872,29 +800,32 @@ function goToSlide(index) {
       weddingBlessing.classList.add("show");
     }
   } else if (previousIndex === 1) {
-    // When leaving component 2, reset animations and flags
+    // Mereset animasi dan menyembunyikan elemen Component 2 saat meninggalkan slide
     resetComponent2Animations();
     hideComponent2Immediately();
     animationInProgress = false;
     component2AnimationCompleted = false;
   }
 
-  // Handle animations and video for component 3
+  // --- Logika untuk Component 3 ---
   if (currentIndex === 2) {
-    pauseBackgroundMusic(); // Pause music when entering component 3
+    pauseBackgroundMusic(); // Menghentikan musik latar
 
+    // Menambahkan kelas AOS untuk memicu animasi
     heading3.classList.add("aos-animate", "aos-zoom-in");
     subtext3.classList.add("aos-animate", "aos-fade-up");
     videoCarouselContainer.classList.add("aos-animate", "aos-fade-up");
 
+    // Memberikan sedikit penundaan agar AOS punya waktu untuk menginisialisasi
     setTimeout(() => {
       heading3.style.transitionDuration = "1000ms";
       subtext3.style.transitionDelay = "500ms";
       videoCarouselContainer.style.transitionDelay = "800ms";
     }, 50);
 
-    showVideo(currentVideoIndex);
+    showVideo(currentVideoIndex); // Menampilkan video pertama (asumsi fungsi showVideo sudah ada)
   } else if (previousIndex === 2) {
+    // Menghapus kelas AOS dan membersihkan gaya saat meninggalkan Component 3
     heading3.classList.remove("aos-animate", "aos-zoom-in");
     subtext3.classList.remove("aos-animate", "aos-fade-up");
     videoCarouselContainer.classList.remove("aos-animate", "aos-fade-up");
@@ -903,53 +834,58 @@ function goToSlide(index) {
     subtext3.style.transitionDelay = "";
     videoCarouselContainer.style.transitionDelay = "";
 
-    stopAllVideos(); // Stop videos when leaving component 3
-    resumeBackgroundMusic(); // Resume music when leaving component 3
+    stopAllVideos(); // Menghentikan semua video
+    resumeBackgroundMusic(); // Melanjutkan musik latar
   }
 
-  // --- Add this block to handle music for component 1 ---
-  if (currentIndex === 0) {
-    stopAllVideos(); // Ensure no videos are playing
-    resumeBackgroundMusic(); // Play background music for component 1
-  }
-  // --- End of added block ---
+  // --- Logika untuk Component 4 ---
+  if (currentIndex === 3) {
+    // When this slide becomes active, ensure AOS re-observes or triggers animations
+    // One way is to trigger AOS refresh or re-add the classes for a re-animation
+    // However, the best approach is to let AOS handle it if the elements are within the viewport.
+    // If AOS isn't re-triggering, you might need to force a refresh or manually add 'aos-animate'
+    // and then remove it to allow AOS to re-add it.
 
-  // Ensure music is playing if not on component 3 and no video is playing
-  if (currentIndex !== 2) {
-    // Check if any video is currently playing after a short delay
-    // This is a safety net in case video transitions are slow
+    // A common technique for re-triggering AOS animations on slide change
+    // is to remove and then re-add the original AOS classes after a short delay.
+    // This simulates the element becoming "out of view" and then "in view" again for AOS.
+
+    thanks.classList.remove("aos-animate");
+    full_member_photo.classList.remove("aos-animate");
+    lastMessage.classList.remove("aos-animate");
+    signature4.classList.remove("aos-animate");
+
+    // Re-add the AOS data attributes if they were removed (which they aren't in your example, but good to be aware)
+    // And then re-add the 'aos-animate' class after a brief timeout if AOS doesn't automatically re-trigger.
     setTimeout(() => {
-      const allVideoElements = videoCarousel.querySelectorAll("video");
-      const anyVideoCurrentlyPlaying = Array.from(allVideoElements).some(
-        (video) => !video.paused && !video.ended
-      );
-      if (!anyVideoCurrentlyPlaying) {
-        resumeBackgroundMusic();
-      }
-    }, 500);
+      thanks.classList.add("aos-animate");
+      full_member_photo.classList.add("aos-animate");
+      lastMessage.classList.add("aos-animate");
+      signature4.classList.add("aos-animate");
+    }, 50); // A small delay
+  } else if (previousIndex === 3) {
+    // When leaving the slide, remove the 'aos-animate' class to reset the animation state.
+    thanks.classList.remove("aos-animate");
+    full_member_photo.classList.remove("aos-animate");
+    lastMessage.classList.remove("aos-animate");
+    signature4.classList.remove("aos-animate");
   }
 }
-// Event listener untuk button scroll dengan proteksi
+
 btnScroll.addEventListener("click", (e) => {
-  // If on component 2 and animation is in progress, prevent changing slide
   if (currentIndex === 1 && animationInProgress) {
     console.log("Click ignored - Component 2 animation is running");
-    e.preventDefault(); // Mencegah tindakan default tombol
+    e.preventDefault();
     return;
   }
 
-  // Only allow scrolling forward from component 0 and 1
   if (currentIndex < maxIndex) {
     currentIndex++;
     goToSlide(currentIndex);
   }
-  // If already at maxIndex (component 2), do nothing or reset to 0 based on desired behavior
-  // For now, it will stay at maxIndex
 });
 
-// Event listener untuk klik layar dengan proteksi
 document.addEventListener("click", function (e) {
-  // Skip jika klik pada button atau elemen control
   if (
     e.target.closest("button") ||
     e.target.closest(".control-element") ||
@@ -958,28 +894,30 @@ document.addEventListener("click", function (e) {
     return;
   }
 
-  // If on component 2 and animation is in progress, prevent changing slide
   if (currentIndex === 1 && animationInProgress) {
     console.log("Screen click ignored - Component 2 animation is running");
     e.preventDefault();
-    e.stopPropagation(); // Stop propagation to prevent other click handlers from firing
+    e.stopPropagation();
     return;
   }
 
-  // Perform normal navigation if not protected
-  // This will only go to the next slide
   if (currentIndex < maxIndex) {
     currentIndex++;
     goToSlide(currentIndex);
   } else {
-    // If at the last slide, loop back to the first or stay
-    currentIndex = 0; // Or keep it at maxIndex if you don't want to loop
+    currentIndex = 0;
     goToSlide(currentIndex);
   }
 });
 
 progressBarSegments.forEach((segment, index) => {
   segment.addEventListener("click", () => {
+    if (currentIndex === 1 && animationInProgress) {
+      console.log(
+        "Progress bar click ignored - Component 2 animation is running"
+      );
+      return;
+    }
     goToSlide(index);
   });
 });
@@ -989,91 +927,76 @@ let endY = 0;
 const threshold = 50;
 
 const carouselContainer = document.getElementById("carouselContainer");
+let isSwiping = false;
 
 carouselContainer.addEventListener(
   "touchstart",
   (e) => {
     startY = e.touches[0].clientY;
-    isSwiping = false; // Reset flag
+    isSwiping = false;
   },
   { passive: true }
-); // Gunakan passive: true untuk peningkatan kinerja (tidak akan memanggil preventDefault di touchstart)
+);
 
 carouselContainer.addEventListener(
   "touchmove",
   (e) => {
-    // Hanya jika satu jari disentuh dan belum ada swipe aktif
     if (e.touches.length === 1 && !isSwiping) {
       const currentY = e.touches[0].clientY;
       const diffY = startY - currentY;
 
-      // Jika pergerakan vertikal cukup signifikan untuk dianggap sebagai swipe
       if (Math.abs(diffY) > 5) {
-        // Sedikit toleransi sebelum menandai sebagai swipe
         isSwiping = true;
-        // Jika ini adalah swipe vertikal, cegah default agar tidak memicu pull-to-refresh
-        // Penting: hanya panggil preventDefault jika Anda yakin ingin mengelola scroll secara manual
         e.preventDefault();
       }
     }
   },
-  { passive: false } // Gunakan passive: false agar preventDefault bisa berfungsi
+  { passive: false }
 );
-
-carouselContainer.addEventListener("touchstart", (e) => {
-  startY = e.touches[0].clientY;
-});
 
 carouselContainer.addEventListener("touchend", (e) => {
   if (isSwiping) {
-    // Hanya proses jika ada swipe vertikal yang terdeteksi
     endY = e.changedTouches[0].clientY;
     const diffY = startY - endY;
 
-    // Add protection for swipe gestures on Component 2
     if (currentIndex === 1 && animationInProgress) {
       console.log("Swipe ignored - Component 2 animation is running");
-      isSwiping = false; // Reset flag
+      isSwiping = false;
       return;
     }
 
     if (diffY > threshold) {
-      // Swipe Up (pindah ke komponen berikutnya)
       currentIndex++;
       if (currentIndex > maxIndex) {
-        currentIndex = maxIndex; // Batasi agar tidak melebihi indeks terakhir
+        currentIndex = maxIndex;
       }
     } else if (diffY < -threshold) {
-      // Swipe Down (pindah ke komponen sebelumnya)
       currentIndex--;
       if (currentIndex < 0) {
-        currentIndex = 0; // Batasi agar tidak kurang dari indeks pertama
+        currentIndex = 0;
       }
     }
     goToSlide(currentIndex);
-    isSwiping = false; // Reset flag setelah selesai
+    isSwiping = false;
   }
 });
 
 carouselContainer.addEventListener(
   "wheel",
   (e) => {
-    e.preventDefault(); // Mencegah scrolling default browser
+    e.preventDefault();
 
-    // Add protection for wheel events on Component 2
     if (currentIndex === 1 && animationInProgress) {
       console.log("Wheel ignored - Component 2 animation is running");
       return;
     }
 
     if (e.deltaY > 0) {
-      // Gulir ke bawah (pindah ke komponen berikutnya)
       currentIndex++;
       if (currentIndex > maxIndex) {
         currentIndex = maxIndex;
       }
     } else {
-      // Gulir ke atas (pindah ke komponen sebelumnya)
       currentIndex--;
       if (currentIndex < 0) {
         currentIndex = 0;
@@ -1081,5 +1004,5 @@ carouselContainer.addEventListener(
     }
     goToSlide(currentIndex);
   },
-  { passive: false } // Penting: Gunakan passive: false untuk memungkinkan preventDefault
+  { passive: false }
 );
