@@ -825,7 +825,9 @@ function goToSlide(index) {
 
     showVideo(currentVideoIndex); // Menampilkan video pertama (asumsi fungsi showVideo sudah ada)
   } else if (previousIndex === 2) {
-    // Menghapus kelas AOS dan membersihkan gaya saat meninggalkan Component 3
+    // --- PERUBAHAN DI SINI ---
+    // Logika ini akan berjalan SETIAP KALI Anda meninggalkan Component 3 (previousIndex === 2)
+    // Baik menuju index 1 (sebelumnya) maupun index 3 (selanjutnya)
     heading3.classList.remove("aos-animate", "aos-zoom-in");
     subtext3.classList.remove("aos-animate", "aos-fade-up");
     videoCarouselContainer.classList.remove("aos-animate", "aos-fade-up");
@@ -840,31 +842,20 @@ function goToSlide(index) {
 
   // --- Logika untuk Component 4 ---
   if (currentIndex === 3) {
-    // When this slide becomes active, ensure AOS re-observes or triggers animations
-    // One way is to trigger AOS refresh or re-add the classes for a re-animation
-    // However, the best approach is to let AOS handle it if the elements are within the viewport.
-    // If AOS isn't re-triggering, you might need to force a refresh or manually add 'aos-animate'
-    // and then remove it to allow AOS to re-add it.
-
-    // A common technique for re-triggering AOS animations on slide change
-    // is to remove and then re-add the original AOS classes after a short delay.
-    // This simulates the element becoming "out of view" and then "in view" again for AOS.
-
+        stopAllVideos(); // Menghentikan semua video jika ada
+    resumeBackgroundMusic(); // Melanjutkan musik latar
     thanks.classList.remove("aos-animate");
     full_member_photo.classList.remove("aos-animate");
     lastMessage.classList.remove("aos-animate");
     signature4.classList.remove("aos-animate");
 
-    // Re-add the AOS data attributes if they were removed (which they aren't in your example, but good to be aware)
-    // And then re-add the 'aos-animate' class after a brief timeout if AOS doesn't automatically re-trigger.
     setTimeout(() => {
       thanks.classList.add("aos-animate");
       full_member_photo.classList.add("aos-animate");
       lastMessage.classList.add("aos-animate");
       signature4.classList.add("aos-animate");
-    }, 50); // A small delay
+    }, 50);
   } else if (previousIndex === 3) {
-    // When leaving the slide, remove the 'aos-animate' class to reset the animation state.
     thanks.classList.remove("aos-animate");
     full_member_photo.classList.remove("aos-animate");
     lastMessage.classList.remove("aos-animate");
